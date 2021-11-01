@@ -3,13 +3,13 @@ pragma experimental ABIEncoderV2;
 
 contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
     
+    uint256 public msgIdx;
     enum Phase { Init, Pending, Done }
     
     struct Sponsor {
         address artist;
         uint256 amount;
         Phase state;
-        Message message;
     }
     
     struct Message {
@@ -18,6 +18,7 @@ contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
     }
     
     mapping(address => Sponsor) sponsors;
+    mapping(uint256 => Message) messages;
     
     modifier validPhase(Phase reqPhase) {
         require(sponsors[msg.sender].state == reqPhase);
@@ -28,23 +29,21 @@ contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
         _mint(msg.sender, initialSupply);
     }
     
-    function registerSponser(address artist, string memory question, uint256 amount) public validPhase(Phase.Init) {
+    function registerSponser(address artist, string memory question, uint256 amount) public {
         sponsors[msg.sender] = Sponsor({
             artist: artist,
             amount: amount,
-            state: Phase.Pending,
-            message: Message({
-                question: question,
-                answer: ""
-            })
+            state: Phase.Pending
         });
+        
+        messages[msgIdx++].question = question;
     }
     
-    function answerArtist(address sponsor, string memory answer) public {
+    function answerArtist(address sponsor, string memory answer, uint256 idx) public {
         require(sponsors[sponsor].state == Phase.Pending);
         require(sponsors[sponsor].artist == msg.sender);
         
-        sponsors[sponsor].message.answer = answer;
+        messages[idx].answer = answer;
         sponsors[sponsor].state = Phase.Done;
         
         // transferFrom(sponsor, msg.sender, 10000);
@@ -55,11 +54,9 @@ contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
         sponsors[msg.sender].artist = address(0);
         sponsors[msg.sender].amount = 0;
         sponsors[msg.sender].state = Phase.Init;
-        sponsors[msg.sender].message.question = "";
-        sponsors[msg.sender].message.answer = "";
     }
     
-    function getMessage() public view returns (string memory, string memory) {
-        return (sponsors[msg.sender].message.question, sponsors[msg.sender].message.answer);
+    function getMessage(uint256 idx) public view returns (string memory, string memory) {
+        return (messages[idx].question, messages[idx].answer);
     }
 }
