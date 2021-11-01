@@ -25,7 +25,7 @@ contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
         _;
     }
     
-    constructor(string memory name, string memory symbol, uint8 decimals, uint256 initialSupply) KIP7Metadata(name, symbol, decimals) public {
+    constructor(string memory name, string memory symbol, uint8 decimals, uint256 initialSupply) KIP7Metadata(name, symbol, decimals) payable public {
         _mint(msg.sender, initialSupply);
     }
     
@@ -46,7 +46,7 @@ contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
         messages[idx].answer = answer;
         sponsors[sponsor].state = Phase.Done;
         
-        // transferFrom(sponsor, msg.sender, 10000);
+        _transfer(address(this), msg.sender, sponsors[sponsor].amount * 1000000000000000000);
         sponsors[sponsor].amount = 0;
     }
     
