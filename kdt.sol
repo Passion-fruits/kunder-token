@@ -36,6 +36,7 @@ contract KDT is KIP7Mintable, KIP7Burnable, KIP7Pausable, KIP7Metadata {
             state: Phase.Pending
         });
         
+        _transfer(msg.sender, address(this), amount * 1000000000000000000);
         messages[msgIdx++].question = question;
     }
     
